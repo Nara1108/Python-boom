@@ -1,0 +1,59 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sb
+g = pd.read_csv(r"C:\Users\dhoke\synthetic_lung_cancer_survey.csv")
+print(g.head())
+print(g.shape)  # check rows and columns
+# basic info on the data
+print(g.head())
+print(g.tail())
+print(g.info())
+print(g.describe())
+# now for the pre-processing part
+print(g.dropna(inplace=True))  # drops all empty values
+print(g.isnull().sum())        # count of number of zero values
+print(g.fillna(value="0",inplace=True))   #fills missing values with value specified
+print(g.drop_duplicates())   # deletes duplicates
+# for the data visualisation part
+# 1. Age distribution (Histogram)
+plt.figure(figsize=(8,5))
+plt.hist(g["AGE"], bins=12, color="blue", edgecolor="black")
+plt.title("Age Distribution")
+plt.xlabel("Age")
+plt.ylabel("Count")
+plt.show()
+# 2. Lung cancer proportion (Pie chart)
+g["LUNG_CANCER"].value_counts().plot(kind="pie", autopct="%1.1f%%", colors=["blue","red"])
+plt.title("Lung Cancer Proportion")
+plt.axis("equal")
+plt.show()
+# 3. Lung cancer vs smoking (Bar chart)
+g.groupby("SMOKING")["LUNG_CANCER"].value_counts().unstack().plot(kind="bar", colormap="coolwarm")
+plt.title("Lung Cancer vs Smoking")
+plt.xlabel("Smoking Status")
+plt.ylabel("Count")
+plt.legend(title="Lung Cancer")
+plt.show()
+# 4. Correlation heatmap (YES/NO encoded)
+bin_cols = [c for c in g.columns if c not in ["GENDER","AGE","CITY","ID"]]
+g_enc = g.copy()
+for c in bin_cols:
+    g_enc[c] = g_enc[c].map({"YES": 1, "NO": 0})
+corr = g_enc.corr(numeric_only=True)
+plt.figure(figsize=(7,6))
+sb.heatmap(corr, cmap="coolwarm", annot=True, fmt=".2f")
+plt.title("Correlation Heatmap of Risk Factors")
+plt.show()
+# 5. Age vs Lung Cancer outcome (Boxplot)
+sb.boxplot(x="LUNG_CANCER", y="AGE", data=g,color="skyblue")
+plt.title("Age vs Lung Cancer Outcome")
+plt.show()
+# overlayed histogram of age by cancer outcome 
+plt.hist(g[g["LUNG_CANCER"]=="YES"]["AGE"], bins=12, alpha=0.6, label="Cancer", color="red")
+plt.hist(g[g["LUNG_CANCER"]=="NO"]["AGE"], bins=12, alpha=0.6, label="No Cancer", color="green")
+plt.title("Age Distribution by Lung Cancer Outcome")
+plt.xlabel("Age")
+plt.ylabel("Count")
+plt.legend()
+plt.show()
